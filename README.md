@@ -9,27 +9,27 @@ Into of any app folder copy & paste the folder management/ in the root path.
 ## Usage
 Notice that the --attr-filter and --attr-val are list of values, besides the --attr-filter is the building of the field model and the query filter. For Example: id__exac
 
-```bash
+```python3
 python manage.py dump_object appName.ModelName --attr-filter "pk__lte" --attr-val 30 --no-follow  > result.json
 ```
 
 ## Examples
 
-```bash
+```python3
 python manage.py dump_object appName.ModelName --no-follow --attr-filter "user_id__exact" --attr-val 6817 > result.json
 ```
 
-```bash
+```python3
 python manage.py dump_object appName.ModelName --attr-filter "unit__slug__exact" --attr-val "value" --no-follow --limit 10 > result.json 
 ```
 
-```bash
+```python3
 python manage.py dump_object appName.ModelName --no-follow --attr-filter "id__lte" "score__lte" --attr-val 4 70 --limit 2 > result.json
 ```
 
 ## Results
 
-```json
+```JSON
 [
     {
         "model": "appName.ModelName",
