@@ -33,8 +33,20 @@ class Command(BaseCommand):
         parser.add_argument(dest='model',
                             help='Name of the model, with app name first.'
                             ' Eg "app_name.model_name"')
-        parser.add_argument(dest='ids', default=None, nargs='*',
+        parser.add_argument(dest='ids',
+                            default=None,
+                            nargs='*',
                             help='Use a list of ids e.g. 0 1 2 3')
+        parser.add_argument('--attr-filter',
+                            dest='attr-filter',
+                            default=None,
+                            nargs='*',
+                            help='Use an attribute from the model and his filter. For example: "pk__lte"')
+        parser.add_argument('--attr-val',
+                            dest='attr-val',
+                            default=None,
+                            nargs='*',
+                            help='Use an value to the attr to build a filter. For example: 100')
 
         # Optional args
         parser.add_argument('--kitchensink', '-k',
@@ -54,30 +66,22 @@ class Command(BaseCommand):
                             action='store_true', dest='natural_foreign',
                             default=False,
                             help='Use natural foreign keys if they are available.')
-        parser.add_argument('--query',
-                            dest='query', default='{"pk__lte": 100}',
-                            help=('Use a json query rather than list of ids '
-                                  'e.g. \'{\"pk__in\": [id, ...]}\''))
         parser.add_argument('--no-follow',
                             action='store_false', dest='follow_fk',
                             default=True,
                             help='does not serialize Foriegn Keys related to object')
-        parser.add_argument('--attr-filter',
-                            dest='attr-filter',
-                            default=None,
-                            help='Use an attribute from the model and his filter. For example: "pk__lte"')
-        parser.add_argument('--attr-val',
-                            dest='attr-val',
-                            default=None,
-                            help='Use an value to the attr to build a filter. For example: 100')
         parser.add_argument('--limit',
                             dest='limit',
                             default=250,
-                            help='Limit filter to return.')
-        parser.add_argument(
-            '--format', default='json', dest='format',
-            help='Specifies the output serialization format for fixtures.',
-        )
+                            help='Use a number to limit the output result set.')
+        parser.add_argument('--order-by',
+                            dest='order_by',
+                            default='id',
+                            help='User an string attribute to order the result set.')
+        parser.add_argument('--format',
+                            default='json',
+                            dest='format',
+                            help='Specifies the output serialization format for fixtures.')
 
     def handle(self, *args, **options):
         error_text = ('%s\nTry calling dump_object with --help argument or ' +
@@ -88,17 +92,19 @@ class Command(BaseCommand):
                 (app_label, model_name) = options['model'].split('.')
             except AttributeError:
                 raise CommandError("Specify model as `appname.modelname")
-            query = options['query']
             ids = options.get('ids', None)
             attr_filter = options.get('attr-filter')
             attr_val = options.get('attr-val')
             limit = int(options.get('limit'))
-            if ids and query:
-                raise CommandError(error_text % 'either use query or id list, not both')
+            order_by = options.get('order_by')
             if not attr_filter and not attr_val:
-                raise CommandError(error_text % 'the both value are required.')
-            # if not (ids or query):
-            #     raise CommandError(error_text % 'must pass list of --ids or a json --query')
+                raise CommandError(error_text % 'attr_filter and attr_val the both value are required.')
+            if not (attr_filter or attr_val):
+                raise CommandError(error_text % 'must pass list of --attr-filter and a list of --attr-val.')
+            if len(attr_filter) != len(attr_val):
+                raise CommandError(error_text % '--attr-filter must be equal to --attr-val.')
+            if not isinstance(order_by, str):
+                raise CommandError(error_text % '--order-by must be a string.')
         except IndexError:
             raise CommandError(error_text % 'No object_class or filter clause supplied.')
         except ValueError:
@@ -110,15 +116,24 @@ class Command(BaseCommand):
             raise CommandError(error_text % 'No filter argument supplied.')
 
         dump_me = loading.get_model(app_label, model_name)
-        if isinstance(attr_val, str):
-            query = '{"' + attr_filter + '": "' + str(attr_val) + '"}'
-        elif isinstance(attr_val, int):
-            query = '{"' + attr_filter + '": ' + attr_val + '}'
+
+        i = 0
+        query = '{'
+        while i < len(attr_filter):
+            if i != 0:
+                query += ', '
+            if isinstance(attr_val[i], str):
+                query += '"' + attr_filter[i] + '": "' + str(attr_val[i]) + '"'
+            elif isinstance(attr_val[i], int):
+                query += '"' + attr_filter[i] + '": ' + attr_val[i]
+            i += 1
+        query += '}'
+
         if query:
-            result_set = dump_me.objects.filter(**json.loads(query))[:limit]
+            result_set = dump_me.objects.filter(**json.loads(query)).order_by('-' + order_by)[:limit]
         else:
             if ids[0] == '*':
-                result_set = dump_me.objects.all()[:limit]
+                result_set = dump_me.objects.all().order_by('-' + order_by)[:limit]
             else:
                 try:
                     parsers = int, str  # long
