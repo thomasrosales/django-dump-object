@@ -4,7 +4,7 @@ This package is useful to get from database a set of objects using a simple filt
 
 ## Installation
 
-Into of any app folder copy & paste the folder management/ int he root path.
+Into of any app folder copy & paste the folder management/ in the root path.
 
 ## Usage
 Notice that the --attr-filter and --attr-val are list of values, besides the --attr-filter is the building of the field model and the query filter. For Example: id__exac
@@ -24,7 +24,7 @@ python manage.py dump_object appName.ModelName --attr-filter "unit__slug__exact"
 ```
 
 ```bash
-python manage.py dump_object appName.ModelName --no-follow --attr-filter "id__lte" "score__lte" --attr-val 4 70 --limit 2
+python manage.py dump_object appName.ModelName --no-follow --attr-filter "id__lte" "score__lte" --attr-val 4 70 --limit 2 > result.json
 ```
 
 ## Results
