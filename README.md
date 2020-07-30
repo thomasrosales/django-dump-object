@@ -7,6 +7,7 @@ This package is useful to get from database a set of objects using a simple filt
 Into of any app folder copy & paste the folder management/ int he root path.
 
 ## Usage
+Notice that the --attr-filter and --attr-val are list of values, besides the --attr-filter is the building of the field model and the query filter. For Example: id__exac
 
 ```bash
 python manage.py dump_object appName.ModelName --attr-filter "pk__lte" --attr-val 30 --no-follow  > result.json
@@ -22,13 +23,17 @@ python manage.py dump_object appName.ModelName --no-follow --attr-filter "user_i
 python manage.py dump_object appName.ModelName --attr-filter "unit__slug__exact" --attr-val "value" --no-follow --limit 10 > result.json 
 ```
 
+```bash
+python manage.py dump_object appName.ModelName --no-follow --attr-filter "id__lte" "score__lte" --attr-val 4 70 --limit 2
+```
+
 ## Results
 
 ```json
 [
     {
         "model": "appName.ModelName",
-        "pk": 30,
+        "pk": 1,
         "fields": {
             "created": "2014-12-09",
             "modified": "2014-12-09",
@@ -51,7 +56,7 @@ python manage.py dump_object appName.ModelName --attr-filter "unit__slug__exact"
     },
     {
         "model": "appName.ModelName",
-        "pk": 29,
+        "pk": 2,
         "fields": {
             "created": "2014-12-09",
             "modified": "2014-12-09",
@@ -74,7 +79,7 @@ python manage.py dump_object appName.ModelName --attr-filter "unit__slug__exact"
     },
     {
         "model": "appName.ModelName",
-        "pk": 28,
+        "pk": 3,
         "fields": {
             "created": "2014-12-08",
             "modified": "2014-12-08",
@@ -97,7 +102,7 @@ python manage.py dump_object appName.ModelName --attr-filter "unit__slug__exact"
     },
     {
         "model": "appName.ModelName",
-        "pk": 27,
+        "pk": 4,
         "fields": {
             "created": "2014-12-08",
             "modified": "2014-12-08",
@@ -120,7 +125,7 @@ python manage.py dump_object appName.ModelName --attr-filter "unit__slug__exact"
     },
     {
         "model": "appName.ModelName",
-        "pk": 26,
+        "pk": 5,
         "fields": {
             "created": "2014-12-04",
             "modified": "2014-12-04",
